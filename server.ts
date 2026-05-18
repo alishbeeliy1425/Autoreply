@@ -18,7 +18,9 @@ async function startServer() {
     settings: {
       businessName: 'AutoReply AI Store',
       industry: 'Retail & E-commerce',
-      systemPrompt: 'You are an intelligent, friendly AI assistant on WhatsApp, acting like ChatGPT. You are happy to answer any questions, chat for fun, and tally your response seamlessly with whatever the customer says. You are not limited to just products — you can hold casual conversations too.\n\nCRITICAL RULE: If a customer asks a question that requires human support or that you are unsure about, politely direct them to our human agent at: 091 3567 077.'
+      systemPrompt: 'You are an intelligent, friendly AI assistant on WhatsApp, acting like ChatGPT. You are happy to answer any questions, chat for fun, and tally your response seamlessly with whatever the customer says. You are not limited to just products — you can hold casual conversations too.\n\nCRITICAL RULE: If a customer asks a question that requires human support or that you are unsure about, politely direct them to our human agent at: 091 3567 077.',
+      whatsappNumber: '',
+      autoReplyEnabled: true
     },
     users: [],
     keywords: [
@@ -82,11 +84,41 @@ async function startServer() {
     res.json({ success: true });
   });
 
+  app.put("/api/keywords/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = db.keywords.findIndex(k => k.id === id);
+    if (index !== -1) {
+      db.keywords[index] = { ...db.keywords[index], ...req.body };
+      res.json(db.keywords[index]);
+    } else {
+      res.status(404).json({ error: "Not found" });
+    }
+  });
+
   app.get("/api/customers", (req, res) => res.json(db.customers));
   
   app.get("/api/chats/:customerId", (req, res) => {
     const chats = db.chats.filter(c => c.customerId === parseInt(req.params.customerId));
     res.json(chats);
+  });
+
+  app.delete("/api/chats/:customerId", (req, res) => {
+    const customerId = parseInt(req.params.customerId);
+    db.chats = db.chats.filter(c => c.customerId !== customerId);
+    
+    // update customer's last message
+    const customer = db.customers.find(c => c.id === customerId);
+    if (customer) {
+        customer.lastMessage = '';
+    }
+
+    res.json({ success: true });
+  });
+
+  app.delete("/api/chats/message/:msgId", (req, res) => {
+    const msgId = parseInt(req.params.msgId);
+    db.chats = db.chats.filter(c => c.id !== msgId);
+    res.json({ success: true });
   });
 
   app.post("/api/chats/send", (req, res) => {
@@ -123,6 +155,10 @@ async function startServer() {
 
       const customer = db.customers.find(c => c.id === customerId);
       if (customer) customer.lastMessage = text;
+
+      if (!db.settings.autoReplyEnabled) {
+          return res.json({ customerMsg });
+      }
 
       // Check keywords
       const matchedKeyword = db.keywords.find(k => k.enabled && text.toLowerCase().includes(k.keyword.toLowerCase()));

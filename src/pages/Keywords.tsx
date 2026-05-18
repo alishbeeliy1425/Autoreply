@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Search, Zap } from 'lucide-react';
+import { Plus, Trash2, Search, Zap, Edit2 } from 'lucide-react';
 
 export default function Keywords() {
   const [keywords, setKeywords] = useState([]);
   const [newKeyword, setNewKeyword] = useState({ keyword: '', reply: '' });
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     fetchKeywords();
@@ -22,21 +23,36 @@ export default function Keywords() {
     if (!newKeyword.keyword || !newKeyword.reply) return;
 
     try {
-      await fetch('/api/keywords', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newKeyword)
-      });
+      if (editingId) {
+        await fetch('/api/keywords/' + editingId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newKeyword)
+        });
+      } else {
+        await fetch('/api/keywords', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newKeyword)
+        });
+      }
       setNewKeyword({ keyword: '', reply: '' });
       setIsAdding(false);
+      setEditingId(null);
       fetchKeywords();
     } catch (err) {
       console.error(err);
     }
   };
 
+  const handleEdit = (kw) => {
+    setNewKeyword({ keyword: kw.keyword, reply: kw.reply });
+    setEditingId(kw.id);
+    setIsAdding(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleDelete = async (id) => {
-    if (!confirm('Delete this keyword?')) return;
     try {
       await fetch("/api/keywords/" + id, { method: 'DELETE' });
       fetchKeywords();
@@ -72,7 +88,7 @@ export default function Keywords() {
       {isAdding && (
         <form onSubmit={handleAdd} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
           <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
-            <Zap size={18} className="text-[#F97316]" /> New Trigger
+            <Zap size={18} className="text-[#F97316]" /> {editingId ? 'Edit Trigger' : 'New Trigger'}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
@@ -136,9 +152,14 @@ export default function Keywords() {
                   </button>
                 </td>
                 <td className="p-4 text-right">
-                  <button onClick={() => handleDelete(kw.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                    <Trash2 size={18} />
-                  </button>
+                  <div className="flex justify-end gap-1">
+                    <button onClick={() => handleEdit(kw)} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
+                      <Edit2 size={18} />
+                    </button>
+                    <button onClick={() => handleDelete(kw.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

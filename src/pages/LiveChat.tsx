@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Bot, User, Sparkles, Loader2, Phone, MessageSquare } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Loader2, Phone, MessageSquare, Trash2 } from 'lucide-react';
 
 export default function LiveChat() {
   const [customers, setCustomers] = useState([]);
@@ -92,6 +92,24 @@ export default function LiveChat() {
     }
   };
 
+  const handleDeleteMessage = async (msgId: number) => {
+    try {
+      await fetch(`/api/chats/message/${msgId}`, { method: 'DELETE' });
+      setChats(prev => prev.filter(c => c.id !== msgId));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteConversation = async () => {
+    try {
+      await fetch(`/api/chats/${selectedCustomerId}`, { method: 'DELETE' });
+      setChats([]);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
 
   return (
@@ -146,12 +164,19 @@ export default function LiveChat() {
                   </div>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
                 {selectedCustomer.tags.map(tag => (
                   <span key={tag} className="px-2 py-1 bg-slate-200 text-slate-600 rounded-md text-xs font-medium">
                     {tag}
                   </span>
                 ))}
+                <button
+                   onClick={handleDeleteConversation}
+                   className="p-2 bg-red-50 text-red-500 rounded-md hover:bg-red-100 transition-colors ml-2"
+                   title="Delete Chat"
+                >
+                   <Trash2 size={16} />
+                </button>
               </div>
             </div>
 
@@ -164,11 +189,39 @@ export default function LiveChat() {
                     <div className={"w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm " + (isBot ? 'bg-[#1E3A8A] text-[#F97316]' : 'bg-slate-200 text-slate-600')}>
                       {isBot ? <Bot size={16} /> : <User size={16} />}
                     </div>
-                    <div className={"max-w-[70%] " + (isBot ? 'text-right' : 'text-left')}>
-                      <div className={"inline-block px-4 py-2.5 rounded-2xl text-sm shadow-sm " + (isBot ? 'bg-[#1E3A8A] text-white rounded-tr-sm' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-sm')}>
-                        {msg.text}
+                    <div className={"max-w-[70%] " + (isBot ? 'text-right' : 'text-left') + " flex flex-col group"}>
+                      <div className="flex items-center gap-2 mb-1">
+                        {isBot ? (
+                          <>
+                             <div className="flex-1"></div>
+                             <button
+                               onClick={() => handleDeleteMessage(msg.id)}
+                               className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 transition-opacity"
+                               title="Delete message"
+                             >
+                                <Trash2 size={14} />
+                             </button>
+                             <div className="inline-block px-4 py-2.5 rounded-2xl text-sm shadow-sm bg-[#1E3A8A] text-white rounded-tr-sm">
+                               {msg.text}
+                             </div>
+                          </>
+                        ) : (
+                          <>
+                             <div className="inline-block px-4 py-2.5 rounded-2xl text-sm shadow-sm bg-white border border-slate-200 text-slate-800 rounded-tl-sm">
+                               {msg.text}
+                             </div>
+                             <button
+                               onClick={() => handleDeleteMessage(msg.id)}
+                               className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 transition-opacity"
+                               title="Delete message"
+                             >
+                                <Trash2 size={14} />
+                             </button>
+                             <div className="flex-1"></div>
+                          </>
+                        )}
                       </div>
-                      <p className="text-[10px] text-slate-400 mt-1">
+                      <p className={"text-[10px] text-slate-400 " + (isBot ? 'mr-1' : 'ml-1')}>
                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
