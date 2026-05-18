@@ -46,9 +46,9 @@ export default function BotSandbox() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto h-[calc(100vh-8rem)] flex flex-col md:flex-row gap-8">
-      {/* Left side description */}
-      <div className="flex-1 space-y-6 pt-4">
+    <div className="max-w-7xl mx-auto h-[calc(100vh-8rem)] md:h-[calc(100vh-6rem)] flex flex-col md:flex-row gap-6">
+      {/* Left side description - hidden on mobile so chat is full width */}
+      <div className="hidden md:flex flex-col w-1/3 space-y-6 pt-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 mb-2">Bot Sandbox</h1>
           <p className="text-slate-500 text-sm leading-relaxed">
@@ -70,87 +70,77 @@ export default function BotSandbox() {
         </div>
       </div>
 
-      {/* Right side Phone Simulator */}
-      <div className="flex justify-center shrink-0">
-        <div className="w-[320px] h-full max-h-[700px] min-h-[500px] border-[8px] border-slate-800 rounded-[2.5rem] overflow-hidden flex flex-col shadow-2xl relative bg-[#efeae2]">
+      {/* Right side Full Screen Chat Simulator */}
+      <div className="flex-1 flex flex-col h-full bg-[#efeae2] sm:rounded-3xl sm:border-[8px] sm:border-slate-800 overflow-hidden relative shadow-md w-full">
+        {/* WhatsApp Header */}
+        <div className="bg-[#075e54] text-white py-3 md:py-4 px-4 shadow-md flex items-center gap-3 z-10 shrink-0">
+          <ArrowLeft size={20} className="opacity-90 hidden sm:block" />
+          <div className="w-10 h-10 bg-slate-300 rounded-full flex items-center justify-center shrink-0 overflow-hidden">
+             <Bot size={24} className="text-slate-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-bold truncate">Business Support (Test Mode)</h3>
+            <p className="text-xs opacity-80 truncate">Always awake, replies instantly</p>
+          </div>
+          <MoreVertical size={20} className="opacity-90 shrink-0" />
+        </div>
+        
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-3 md:gap-4 relative z-0">
+           {/* WhatsApp background doodle placeholder - using a light color */}
+          <div className="absolute inset-0 bg-[#efeae2] opacity-50 z-[-1]" />
           
-          {/* Status Bar Mock */}
-          <div className="h-6 bg-[#075e54] w-full flex justify-end items-center px-4 gap-1.5 opacity-90">
-            <div className="w-1 h-3 rounded-full bg-white opacity-80"></div>
-            <div className="w-1 h-3 rounded-full bg-white opacity-80"></div>
-            <div className="w-2.5 h-2.5 rounded-full bg-white opacity-80 ml-1"></div>
+          <div className="flex justify-center mb-2">
+            <div className="bg-[#e1f3fb] text-[#1f2937] text-[11px] md:text-sm px-3 md:px-4 py-1.5 rounded-lg uppercase tracking-wider font-semibold shadow-sm">
+              Today
+            </div>
           </div>
 
-          {/* WhatsApp Header */}
-          <div className="bg-[#075e54] text-white py-3 px-3 shadow-md flex items-center gap-3 z-10 sticky top-0 shrink-0">
-            <ArrowLeft size={20} className="opacity-90" />
-            <div className="w-9 h-9 bg-slate-300 rounded-full flex items-center justify-center shrink-0 overflow-hidden">
-               <Bot size={20} className="text-slate-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-bold truncate">Business Support</h3>
-              <p className="text-[10px] opacity-80 truncate">Always awake, replies instantly</p>
-            </div>
-            <MoreVertical size={20} className="opacity-90 shrink-0" />
-          </div>
-          
-          {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 relative z-0">
-             {/* WhatsApp background doodle placeholder - using a light color */}
-            <div className="absolute inset-0 bg-[#efeae2] opacity-50 z-[-1]" />
-            
-            <div className="flex justify-center mb-2">
-              <div className="bg-[#e1f3fb] text-[#1f2937] text-[10px] px-3 py-1 rounded-lg uppercase tracking-wider font-semibold shadow-sm">
-                Today
-              </div>
-            </div>
-
-            {messages.map((msg) => (
-              <div key={msg.id} className={`flex ${msg.isBot ? 'justify-start' : 'justify-end'}`}>
-                <div className={`max-w-[85%] rounded-lg p-2.5 shadow-sm text-sm break-words relative pb-4 
-                  ${msg.isBot ? 'bg-white rounded-tl-sm text-slate-800' : 'bg-[#dcf8c6] rounded-tr-sm text-slate-900'}
-                `}>
-                  {msg.text}
-                  <div className="absolute bottom-1 right-2 text-[9px] text-slate-400 font-medium">
-                    {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </div>
+          {messages.map((msg) => (
+            <div key={msg.id} className={`flex ${msg.isBot ? 'justify-start' : 'justify-end'}`}>
+              <div className={`max-w-[85%] md:max-w-[70%] rounded-lg p-3 md:p-4 shadow-sm text-[15px] md:text-base break-words relative pb-6 md:pb-7 
+                ${msg.isBot ? 'bg-white rounded-tl-sm text-slate-800' : 'bg-[#dcf8c6] rounded-tr-sm text-slate-900'}
+              `}>
+                {msg.text}
+                <div className="absolute bottom-1.5 md:bottom-2 right-2 md:right-3 text-[10px] md:text-[11px] text-slate-400 font-medium">
+                  {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
-            ))}
+            </div>
+          ))}
 
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="bg-white rounded-lg rounded-tl-sm p-3 shadow-sm flex gap-1">
-                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></div>
-                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.15s'}}></div>
-                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.3s'}}></div>
-                </div>
+          {isTyping && (
+            <div className="flex justify-start">
+              <div className="bg-white rounded-lg rounded-tl-sm p-4 shadow-sm flex gap-1.5 items-center">
+                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.15s'}}></div>
+                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.3s'}}></div>
               </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
 
-          {/* WA Input Area */}
-          <div className="p-2 bg-[#f0f0f0] shrink-0 z-10">
-            <form onSubmit={handleSend} className="flex gap-2 items-center">
-              <div className="flex-1 bg-white rounded-full flex items-center px-4 py-2 min-h-[44px]">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  placeholder="Type a message"
-                  className="flex-1 bg-transparent outline-none text-[15px]"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={!input.trim() || isTyping}
-                className="w-11 h-11 bg-[#00a884] text-white rounded-full flex items-center justify-center shrink-0 hover:bg-[#008f6f] disabled:opacity-50 transition-colors shadow-sm"
-              >
-                <Send size={18} className="mr-0.5" />
-              </button>
-            </form>
-          </div>
+        {/* WA Input Area */}
+        <div className="p-3 md:p-4 bg-[#f0f0f0] shrink-0 z-10 w-full">
+          <form onSubmit={handleSend} className="flex gap-2 items-center max-w-4xl mx-auto">
+            <div className="flex-1 bg-white rounded-full flex items-center px-4 md:px-5 py-2 md:py-3 min-h-[48px] md:min-h-[54px] shadow-sm">
+              <input
+                type="text"
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                placeholder="Type a message"
+                className="flex-1 bg-transparent outline-none text-[15px] md:text-base"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={!input.trim() || isTyping}
+              className="w-12 h-12 md:w-14 md:h-14 bg-[#00a884] text-white rounded-full flex items-center justify-center shrink-0 hover:bg-[#008f6f] disabled:opacity-50 transition-colors shadow-sm"
+            >
+              <Send size={20} className="mr-0.5 md:mr-1" />
+            </button>
+          </form>
         </div>
       </div>
     </div>
