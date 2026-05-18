@@ -1,10 +1,11 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, MessageSquare, KeyRound, Megaphone, Users, Settings, LogOut, Phone, Smartphone } from 'lucide-react';
+import { LayoutDashboard, MessageSquare, KeyRound, Megaphone, Users, Settings, LogOut, Phone, Smartphone, Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function Layout() {
   const navigate = useNavigate();
   const [userName, setUserName] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -33,14 +34,27 @@ export default function Layout() {
   ];
 
   return (
-    <div className="flex h-screen bg-slate-100 text-slate-900">
+    <div className="flex h-screen bg-slate-100 text-slate-900 overflow-hidden">
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 z-20 md:hidden" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-[#1E3A8A] text-slate-300 flex flex-col">
-        <div className="p-6 flex items-center gap-3 border-b border-slate-700/50">
-          <div className="bg-[#F97316] p-2 rounded-lg text-white">
-            <Phone size={24} />
+      <aside className={`fixed inset-y-0 left-0 z-30 w-64 bg-[#1E3A8A] text-slate-300 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-6 flex items-center justify-between border-b border-slate-700/50">
+          <div className="flex items-center gap-3">
+            <div className="bg-[#F97316] p-2 rounded-lg text-white shrink-0">
+              <Phone size={24} />
+            </div>
+            <h1 className="text-xl font-bold text-white tracking-tight">AutoReply AI</h1>
           </div>
-          <h1 className="text-xl font-bold text-white tracking-tight">AutoReply AI</h1>
+          <button className="md:hidden text-slate-400 hover:text-white" onClick={() => setSidebarOpen(false)}>
+            <X size={24} />
+          </button>
         </div>
         
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
@@ -48,6 +62,7 @@ export default function Layout() {
             <NavLink
               key={item.name}
               to={item.path}
+              onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
                 "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 " + (
                   isActive
@@ -81,17 +96,23 @@ export default function Layout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="bg-white border-b border-slate-200 flex items-center justify-between px-8 py-4 shrink-0">
-          <h2 className="text-lg font-semibold text-slate-800">Admin Dashboard</h2>
+      <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+        <header className="bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 py-4 shrink-0">
           <div className="flex items-center gap-4">
-            <div className="text-sm text-slate-500">Welcome, <span className="font-medium text-slate-900">{userName || 'Admin'}</span></div>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#1E3A8A] to-[#F97316] flex items-center justify-center text-white font-bold shadow-sm">
+            <button className="md:hidden text-slate-500 hover:text-slate-700" onClick={() => setSidebarOpen(true)}>
+              <Menu size={24} />
+            </button>
+            <h2 className="text-lg font-semibold text-slate-800 hidden sm:block">Admin Dashboard</h2>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="text-sm text-slate-500 hidden sm:block">Welcome, <span className="font-medium text-slate-900">{userName || 'Admin'}</span></div>
+            <div className="text-sm text-slate-900 sm:hidden font-medium">{userName || 'Admin'}</div>
+            <div className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-tr from-[#1E3A8A] to-[#F97316] flex items-center justify-center text-white font-bold shadow-sm">
               {userName ? userName.charAt(0).toUpperCase() : 'A'}
             </div>
           </div>
         </header>
-        <div className="flex-1 overflow-y-auto p-8">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
           <Outlet />
         </div>
       </main>
